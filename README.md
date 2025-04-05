@@ -1,6 +1,6 @@
-# 📈 InsightWealthJ – Real-Time Stock Market Prediction & Learning Platform
+# 📈 InvestIQ – Real-Time Stock Market Prediction & Learning Platform
 
-InsightWealthJ is an all-in-one real-time stock analysis platform tailored for short-term investors and beginners. It combines deep learning-based price prediction, live sentiment analysis, educational tools, and user interaction features to make stock market investing more accessible and intelligent.
+InsvesyIQ is an all-in-one real-time stock analysis platform tailored for short-term investors and beginners. It combines deep learning-based price prediction, live sentiment analysis, educational tools, and user interaction features to make stock market investing more accessible and intelligent.
 
 ---
 
