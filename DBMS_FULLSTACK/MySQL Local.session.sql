@@ -1,0 +1,3 @@
+USE StockApp;
+ALTER TABLE users MODIFY phone INT NOT NULL;
+ALTER TABLE users DROP COLUMN phone;

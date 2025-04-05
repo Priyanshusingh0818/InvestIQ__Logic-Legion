@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Quiz</title>
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4CAF50;
+            --dark: #121212;
+            --darker: #0a0a0a;
+            --light: #e0e0e0;
+            --correct: #4CAF50;
+            --wrong: #F44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: var(--darker);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background-color: var(--primary);
+            animation: lineGrow 1.5s forwards;
+        }
+        
+        @keyframes lineGrow {
+            to {
+                width: 100px;
+            }
+        }
+        
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .question-container {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .option {
+            padding: 0.8rem 1.2rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .option.selected {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .option.correct {
+            background-color: var(--correct);
+            color: white;
+        }
+        
+        .option.wrong {
+            background-color: var(--wrong);
+            color: white;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover {
+            background-color: #5a52e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 3px;
+            width: 0;
+            transition: width 0.5s ease;
+        }
+        
+        .result-container {
+            text-align: center;
+            display: none;
+        }
+        
+        .score {
+            font-size: 5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: scale(0.5);
+            animation: scoreReveal 1s forwards;
+        }
+        
+        @keyframes scoreReveal {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .result-message {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            opacity: 0;
+        }
+        
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 0% 0%, var(--wrong) 0% 100%);
+            margin: 0 auto 2rem;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: scale(0.8);
+            animation: chartReveal 1s 0.5s forwards;
+        }
+        
+        @keyframes chartReveal {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .pie-chart::before {
+            content: '';
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background-color: var(--darker);
+            top: 20px;
+            left: 20px;
+        }
+        
+        .pie-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            margin: 0 auto;
+            animation: rotate 1s linear infinite;
+        }
+        
+        @keyframes rotate {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        #error-message {
+            color: var(--wrong);
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .badge {
+            margin-top: 2rem;
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: badgeReveal 1s 1s forwards;
+        }
+        
+        @keyframes badgeReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .badge svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .share-button {
+            background-color: #1DA1F2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .share-button:hover {
+            background-color: #0c85d0;
+        }
+        
+        .star {
+            position: absolute;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Market Quiz</h1>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        
+        <div class="quiz-container" id="quiz-container">
+            <!-- Questions will be inserted here by JavaScript -->
+        </div>
+        
+        <div class="buttons">
+            <button id="next-btn">Next Question</button>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <div class="sparkles" id="sparkles"></div>
+            <div class="badge" id="badge">
+                <svg viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" fill="#6C63FF" />
+                    <circle cx="100" cy="100" r="80" fill="#121212" />
+                    <path id="badge-stars" d=""></path>
+                    <text x="100" y="90" fill="#e0e0e0" font-size="24" text-anchor="middle" font-weight="bold">SCORE</text>
+                    <text x="100" y="120" id="badge-score" fill="#e0e0e0" font-size="36" text-anchor="middle" font-weight="bold">0/10</text>
+                </svg>
+            </div>
+            <div class="pie-chart" id="pie-chart">
+                <div class="pie-label">
+                    <span id="correct-count">0</span> / 10
+                </div>
+            </div>
+            <div class="score" id="score">0</div>
+            <div class="result-message" id="result-message">You completed the quiz!</div>
+            <button id="restart-btn">Try Again</button>
+            <button id="submit-score-btn" class="share-button">Save Score</button>
+            <div class="loader" id="loader"></div>
+            <div id="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions
+        const questions = [
+            {
+                question: "What does P/E ratio stand for?",
+                options: [
+                    "Price to Earnings ratio",
+                    "Profit to Equity ratio",
+                    "Potential to Earnings ratio",
+                    "Performance to Efficiency ratio"
+                ],
+                answer: 0
+            },
+            {
+                question: "Which stock market index tracks the performance of 500 large US companies?",
+                options: [
+                    "Dow Jones Industrial Average",
+                    "NASDAQ Composite",
+                    "S&P 500",
+                    "Russell 2000"
+                ],
+                answer: 2
+            },
+            {
+                question: "What term describes a prolonged period where stock prices are falling?",
+                options: [
+                    "Bull market",
+                    "Bear market",
+                    "Stag market",
+                    "Wolf market"
+                ],
+                answer: 1
+            },
+            {
+                question: "What is a 'Blue Chip' stock?",
+                options: [
+                    "A newly listed company's stock",
+                    "A stock that pays high dividends",
+                    "A high-risk, high-return stock",
+                    "A stock of a well-established, financially sound company"
+                ],
+                answer: 3
+            },
+            {
+                question: "What does IPO stand for?",
+                options: [
+                    "Initial Public Offering",
+                    "International Profit Organization",
+                    "Internal Purchase Order",
+                    "Investment Portfolio Optimization"
+                ],
+                answer: 0
+            },
+            {
+                question: "Which of these is NOT a stock exchange?",
+                options: [
+                    "NYSE",
+                    "NASDAQ",
+                    "FOREX",
+                    "LSE"
+                ],
+                answer: 2
+            },
+            {
+                question: "What is a stock split?",
+                options: [
+                    "When a company divides itself into two separate entities",
+                    "When a company increases the number of its shares by dividing each existing share",
+                    "When a company merges with another company",
+                    "When dividends are distributed among shareholders"
+                ],
+                answer: 1
+            },
+            {
+                question: "What is a market order?",
+                options: [
+                    "An order to buy or sell a stock at the best available current price",
+                    "An order to buy or sell a stock only at a specified price",
+                    "An order to buy or sell a stock when it reaches a certain price",
+                    "An order that must be executed at the closing of the market"
+                ],
+                answer: 0
+            },
+            {
+                question: "What does 'market capitalization' refer to?",
+                options: [
+                    "The total profit a company makes in a year",
+                    "The total value of a company's outstanding shares",
+                    "The maximum amount a company can raise through an IPO",
+                    "The total debt of a publicly traded company"
+                ],
+                answer: 1
+            },
+            {
+                question: "Which of these factors typically does NOT affect stock prices?",
+                options: [
+                    "Company earnings reports",
+                    "Interest rates",
+                    "Company CEO's favorite color",
+                    "Industry trends"
+                ],
+                answer: 2
+            }
+        ];
+
+        // DOM elements
+        const quizContainer = document.getElementById('quiz-container');
+        const nextButton = document.getElementById('next-btn');
+        const resultContainer = document.getElementById('result-container');
+        const scoreElement = document.getElementById('score');
+        const resultMessage = document.getElementById('result-message');
+        const restartButton = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress');
+        const pieChart = document.getElementById('pie-chart');
+        const correctCount = document.getElementById('correct-count');
+        const badgeScore = document.getElementById('badge-score');
+        const submitScoreBtn = document.getElementById('submit-score-btn');
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('error-message');
+
+        // Quiz variables
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+        let questionElements = [];
+        let answeredQuestions = 0;
+        let quizCompleted = false;
+        
+        // Initialize the quiz
+        function initQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedOption = null;
+            answeredQuestions = 0;
+            quizCompleted = false;
+            questionElements = [];
+            
+            // Clear quiz container
+            quizContainer.innerHTML = '';
+            resultContainer.style.display = 'none';
+            
+            showQuestion(currentQuestion);
+            updateProgressBar();
+            
+            nextButton.textContent = 'Next Question';
+            nextButton.disabled = true;
+        }
+        
+        // Show a specific question
+        function showQuestion(index) {
+            // Create question element
+            const questionElement = document.createElement('div');
+            questionElement.className = 'question-container';
+            questionElement.style.animationDelay = `${0.2}s`;
+            
+            const questionText = document.createElement('div');
+            questionText.className = 'question';
+            questionText.textContent = `${index + 1}. ${questions[index].question}`;
+            
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options';
+            
+            // Create option elements
+            questions[index].options.forEach((option, i) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.dataset.index = i;
+                optionElement.style.animationDelay = `${0.3 + (i * 0.1)}s`;
+                
+                optionElement.addEventListener('click', () => selectOption(optionElement, i));
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            questionElement.appendChild(questionText);
+            questionElement.appendChild(optionsContainer);
+            
+            // Add to quiz container
+            quizContainer.innerHTML = '';
+            quizContainer.appendChild(questionElement);
+            questionElements.push(questionElement);
+            
+            nextButton.disabled = true;
+        }
+        
+        // Select an option
+        function selectOption(element, index) {
+            const options = document.querySelectorAll('.option');
+            
+            // Clear previous selection
+            options.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Set new selection
+            element.classList.add('selected');
+            selectedOption = index;
+            
+            nextButton.disabled = false;
+        }
+        
+        // Check the answer and proceed to next question
+        function checkAnswer() {
+            if (selectedOption === null) return;
+            
+            const options = document.querySelectorAll('.option');
+            const correctAnswer = questions[currentQuestion].answer;
+            
+            // Show correct/wrong answers
+            options.forEach((option, index) => {
+                if (index === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (index === selectedOption && selectedOption !== correctAnswer) {
+                    option.classList.add('wrong');
+                }
+                
+                // Disable further selection
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Update score if correct
+            if (selectedOption === correctAnswer) {
+                score++;
+            }
+            
+            answeredQuestions++;
+            
+            // Disable next button briefly for animation
+            nextButton.disabled = true;
+            setTimeout(() => {
+                nextButton.disabled = false;
+            }, 1000);
+            
+            // Move to next question or show results
+            setTimeout(() => {
+                currentQuestion++;
+                updateProgressBar();
+                
+                if (currentQuestion < questions.length) {
+                    showQuestion(currentQuestion);
+                    selectedOption = null;
+                } else {
+                    showResults();
+                }
+            }, 1500);
+        }
+        
+        // Show final results
+        function showResults() {
+            quizContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+            quizCompleted = true;
+            
+            // Update score display
+            scoreElement.textContent = `${score * 10}%`;
+            badgeScore.textContent = `${score}/10`;
+            correctCount.textContent = score;
+            
+            // Update pie chart
+            pieChart.style.background = `conic-gradient(var(--correct) 0% ${score*10}%, var(--wrong) ${score*10}% 100%)`;
+            
+            // Create different messages based on score
+            if (score >= 9) {
+                resultMessage.textContent = "Outstanding! You're a stock market expert!";
+                createSparkles();
+            } else if (score >= 7) {
+                resultMessage.textContent = "Great job! You know your stocks well!";
+            } else if (score >= 5) {
+                resultMessage.textContent = "Good effort! You have a solid understanding.";
+            } else {
+                resultMessage.textContent = "Keep learning! The stock market takes time to master.";
+            }
+            
+            nextButton.style.display = 'none';
+            
+            // Create badge stars based on score
+            const badgeStars = document.getElementById('badge-stars');
+            let starsPath = '';
+            
+            const numStars = Math.ceil(score / 2);
+            for (let i = 0; i < numStars; i++) {
+                const angle = (i / numStars) * Math.PI * 2;
+                const radius = 65;
+                const x = 100 + radius * Math.sin(angle);
+                const y = 100 - radius * Math.cos(angle);
+                
+                starsPath += `M ${x} ${y} L ${x + 3} ${y + 9} L ${x + 12} ${y + 9} L ${x + 5} ${y + 15} L ${x + 8} ${y + 24} L ${x} ${y + 19} L ${x - 8} ${y + 24} L ${x - 5} ${y + 15} L ${x - 12} ${y + 9} L ${x - 3} ${y + 9} Z `;
+            }
+            
+            badgeStars.setAttribute('d', starsPath);
+            badgeStars.setAttribute('fill', '#FFD700');
+        }
+        
+        // Create sparkle effect for high scores
+        function createSparkles() {
+            const sparklesContainer = document.getElementById('sparkles');
+            sparklesContainer.innerHTML = '';
+            
+            for (let i = 0; i < 50; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                
+                // Random size
+                const size = Math.random() * 6 + 2;
+                
+                // Random delay
+                const delay = Math.random() * 2;
+                
+                // Random duration
+                const duration = Math.random() * 2 + 1;
+                
+                // Set styles
+                sparkle.style.left = `${x}%`;
+                sparkle.style.top = `${y}%`;
+                sparkle.style.width = `${size}px`;
+                sparkle.style.height = `${size}px`;
+                sparkle.style.backgroundColor = `hsl(${Math.random() * 60 + 240}, 100%, 70%)`;
+                sparkle.style.animation = `sparkleAnimation ${duration}s ${delay}s infinite`;
+                
+                // Define animation
+                const styleSheet = document.styleSheets[0];
+                styleSheet.insertRule(`
+                    @keyframes sparkleAnimation {
+                        0% { transform: scale(0); opacity: 0; }
+                        50% { transform: scale(1); opacity: 1; }
+                        100% { transform: scale(0); opacity: 0; }
+                    }
+                `, styleSheet.cssRules.length);
+                
+                sparklesContainer.appendChild(sparkle);
+            }
+        }
+        
+        // Create floating stars animation
+        function createFloatingStars() {
+            const container = document.querySelector('.container');
+            
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Star shape
+                star.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20">
+                    <polygon points="10,0 13,7 20,7 14,12 16,20 10,15 4,20 6,12 0,7 7,7" fill="#FFD700" />
+                </svg>`;
+                
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                
+                // Random delay and duration
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 10 + 10;
+                
+                // Set styles
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.animation = `floatStar ${duration}s ${delay}s infinite linear`;
+                
+                // Define animation
+                const keyframes = `
+                    @keyframes floatStar {
+                        0% {
+                            transform: translate(0, 0) rotate(0deg);
+                            opacity: ${Math.random() * 0.7};
+                        }
+                        25% {
+                            transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(90deg);
+                            opacity: ${Math.random() * 0.7 + 0.3};
+                        }
+                        50% {
+                            transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(180deg);
+                            opacity: ${Math.random() * 0.7};
+                        }
+                        75% {
+                            transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(270deg);
+                            opacity: ${Math.random() * 0.7 + 0.3};
+                        }
+                        100% {
+                            transform: translate(0, 0) rotate(360deg);
+                            opacity: ${Math.random() * 0.7};
+                        }
+                    }
+                `;
+                
+                document.styleSheets[0].insertRule(keyframes, document.styleSheets[0].cssRules.length);
+                container.appendChild(star);
+            }
+        }
+        
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = (currentQuestion / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        // Event listeners
+        nextButton.addEventListener('click', () => {
+            if (quizCompleted) {
+                initQuiz();
+            } else if (selectedOption !== null) {
+                checkAnswer();
+            }
+        });
+        
+        restartButton.addEventListener('click', initQuiz);
+        
+        // Submit score button
+        submitScoreBtn.addEventListener('click', async () => {
+            loader.style.display = 'block';
+            errorMessage.style.display = 'none';
+            submitScoreBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/submit_score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ score: score * 10 })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    submitScoreBtn.textContent = 'Score Saved!';
+                    submitScoreBtn.style.backgroundColor = 'var(--correct)';
+                } else {
+                    throw new Error(data.error || 'Failed to save score');
+                }
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+                submitScoreBtn.textContent = 'Try Again';
+            } finally {
+                loader.style.display = 'none';
+                submitScoreBtn.disabled = false;
+            }
+        });
+        
+        // Initialize the quiz
+        initQuiz();
+        
+        // Extra animations for visual appeal
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingStars();
+        });
+    </script>
+</body>
+</html>

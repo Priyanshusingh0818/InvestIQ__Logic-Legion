@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Password Strength Analyzer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #f5f8fa;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+    
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    h2 {
+      color: #3498db;
+      margin: 15px 0;
+      font-size: 20px;
+    }
+    
+    .input-container {
+      margin-bottom: 30px;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .password-metrics {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .metric-box {
+      flex: 1;
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      min-width: 150px;
+    }
+    
+    .metric-title {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 8px;
+    }
+    
+    .metric-value {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    .strength-meter {
+      margin-bottom: 30px;
+    }
+    
+    .strength-bar {
+      height: 8px;
+      background-color: #ecf0f1;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    
+    .strength-fill {
+      height: 100%;
+      width: 0;
+      border-radius: 4px;
+      transition: all 0.5s ease;
+    }
+    
+    .strength-text {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
+    }
+    
+    .visualization-container {
+      margin-top: 30px;
+    }
+    
+    .chart-container {
+      height: 300px;
+      margin-bottom: 30px;
+    }
+    
+    .feedback-container {
+      background-color: #f1f9ff;
+      border-left: 4px solid #3498db;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+    
+    .feedback-title {
+      font-weight: bold;
+      color: #2980b9;
+      margin-bottom: 5px;
+    }
+    
+    .feedback-text {
+      color: #34495e;
+    }
+    
+    .feature-list {
+      margin-top: 10px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .feature-icon {
+      width: 20px;
+      height: 20px;
+      background-color: #27ae60;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      margin-right: 10px;
+    }
+    
+    .feature-icon.negative {
+      background-color: #e74c3c;
+    }
+    
+    .neural-network {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      height: 200px;
+      position: relative;
+    }
+    
+    .layer {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      position: relative;
+    }
+    
+    .neuron {
+      width: 25px;
+      height: 25px;
+      background-color: #3498db;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+    
+    .neuron.active {
+      background-color: #e74c3c;
+      box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+    }
+    
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    
+    line {
+      stroke: #bdc3c7;
+      stroke-width: 1;
+    }
+    
+    line.active {
+      stroke: #e74c3c;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI-Powered Password Strength Analyzer</h1>
+    
+    <div class="input-container">
+      <h2>Test Your Password</h2>
+      <input type="text" id="passwordInput" placeholder="Enter a password to analyze" autocomplete="off">
+    </div>
+    
+    <div class="strength-meter">
+      <h2>Password Strength</h2>
+      <div class="strength-bar">
+        <div class="strength-fill" id="strengthFill"></div>
+      </div>
+      <div class="strength-text" id="strengthText">Enter a password</div>
+    </div>
+    
+    <div class="password-metrics">
+      <div class="metric-box">
+        <div class="metric-title">Length</div>
+        <div class="metric-value" id="lengthValue">0</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-title">Complexity Score</div>
+        <div class="metric-value" id="complexityValue">0</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-title">Entropy Bits</div>
+        <div class="metric-value" id="entropyValue">0</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-title">Crack Time</div>
+        <div class="metric-value" id="crackTimeValue">-</div>
+      </div>
+    </div>
+    
+    <div class="visualization-container">
+      <h2>Deep Learning Analysis</h2>
+      
+      <div class="neural-network" id="neuralNetwork">
+        <svg id="connections"></svg>
+        <!-- Neural network will be generated here -->
+      </div>
+      
+      <div class="chart-container">
+        <canvas id="featureChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="feedback-container">
+      <div class="feedback-title">AI Feedback</div>
+      <div class="feedback-text" id="feedbackText">Enter a password to receive AI-powered feedback.</div>
+      <div class="feature-list" id="featureList">
+        <!-- Features will be added here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+  <script>
+    // DOM Elements
+    const passwordInput = document.getElementById('passwordInput');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+    const lengthValue = document.getElementById('lengthValue');
+    const complexityValue = document.getElementById('complexityValue');
+    const entropyValue = document.getElementById('entropyValue');
+    const crackTimeValue = document.getElementById('crackTimeValue');
+    const feedbackText = document.getElementById('feedbackText');
+    const featureList = document.getElementById('featureList');
+    const neuralNetworkDiv = document.getElementById('neuralNetwork');
+    const connectionsContainer = document.getElementById('connections');
+    
+    // Chart
+    let featureChart;
+    
+    // Initialize the visualization
+    function initVisualization() {
+      createNeuralNetwork();
+      initChart();
+      
+      // Add event listener to password input
+      passwordInput.addEventListener('input', analyzePassword);
+    }
+    
+    // Create neural network visualization
+    function createNeuralNetwork() {
+      // Define network architecture
+      const layers = [
+        4,  // Input layer (features)
+        6,  // Hidden layer 1
+        8,  // Hidden layer 2
+        4,  // Hidden layer 3
+        1   // Output layer (password strength)
+      ];
+      
+      // Clear existing content
+      neuralNetworkDiv.innerHTML = '';
+      let connections = '';
+      
+      // Create layers and neurons
+      const neurons = [];
+      
+      for (let i = 0; i < layers.length; i++) {
+        const layer = document.createElement('div');
+        layer.className = 'layer';
+        layer.id = `layer-${i}`;
+        
+        neurons[i] = [];
+        
+        for (let j = 0; j < layers[i]; j++) {
+          const neuron = document.createElement('div');
+          neuron.className = 'neuron';
+          neuron.id = `neuron-${i}-${j}`;
+          layer.appendChild(neuron);
+          neurons[i][j] = neuron;
+          
+          // Create connections to previous layer
+          if (i > 0) {
+            for (let k = 0; k < layers[i-1]; k++) {
+              connections += `<line id="connection-${i-1}-${k}-${i}-${j}" x1="0" y1="0" x2="0" y2="0" />`;
+            }
+          }
+        }
+        
+        neuralNetworkDiv.appendChild(layer);
+      }
+      
+      connectionsContainer.innerHTML = connections;
+      
+      // Position connections after neurons are placed
+      setTimeout(positionConnections, 100);
+    }
+    
+    function positionConnections() {
+      for (let i = 1; i < 5; i++) { // For each layer except the input
+        for (let j = 0; j < document.querySelectorAll(`#layer-${i} .neuron`).length; j++) {
+          const currentNeuron = document.getElementById(`neuron-${i}-${j}`);
+          const currentRect = currentNeuron.getBoundingClientRect();
+          const neuralRect = neuralNetworkDiv.getBoundingClientRect();
+          
+          for (let k = 0; k < document.querySelectorAll(`#layer-${i-1} .neuron`).length; k++) {
+            const prevNeuron = document.getElementById(`neuron-${i-1}-${k}`);
+            const prevRect = prevNeuron.getBoundingClientRect();
+            
+            const connection = document.getElementById(`connection-${i-1}-${k}-${i}-${j}`);
+            if (connection) {
+              connection.setAttribute('x1', (prevRect.left + prevRect.width/2) - neuralRect.left);
+              connection.setAttribute('y1', (prevRect.top + prevRect.height/2) - neuralRect.top);
+              connection.setAttribute('x2', (currentRect.left + currentRect.width/2) - neuralRect.left);
+              connection.setAttribute('y2', (currentRect.top + currentRect.height/2) - neuralRect.top);
+            }
+          }
+        }
+      }
+    }
+    
+    // Initialize chart
+    function initChart() {
+      const ctx = document.getElementById('featureChart').getContext('2d');
+      featureChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Length', 'Character Diversity', 'Pattern Resistance', 'Uniqueness', 'Dictionary Resistance'],
+          datasets: [{
+            label: 'Password Strength Factors',
+            data: [0, 0, 0, 0, 0],
+            backgroundColor: 'rgba(52, 152, 219, 0.3)',
+            borderColor: 'rgba(52, 152, 219, 0.8)',
+            pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(41, 128, 185, 1)',
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              angleLines: {
+                display: true
+              },
+              suggestedMin: 0,
+              suggestedMax: 1,
+              ticks: {
+                stepSize: 0.2,
+                display: false
+              }
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+    
+    // Simulate AI analysis of password
+    function analyzePassword() {
+      const password = passwordInput.value;
+      
+      if (!password) {
+        resetVisualizations();
+        return;
+      }
+      
+      // Calculate basic metrics
+      const length = password.length;
+      const hasLower = /[a-z]/.test(password);
+      const hasUpper = /[A-Z]/.test(password);
+      const hasDigit = /[0-9]/.test(password);
+      const hasSpecial = /[^A-Za-z0-9]/.test(password);
+      
+      const uniqueChars = new Set(password).size;
+      const charDiversity = uniqueChars / length;
+      
+      // Calculate pseudo-entropy
+      const charsetSize = 
+        (hasLower ? 26 : 0) + 
+        (hasUpper ? 26 : 0) + 
+        (hasDigit ? 10 : 0) + 
+        (hasSpecial ? 33 : 0);
+      
+      const entropy = Math.log2(Math.pow(charsetSize || 1, length));
+      
+      // Simulate pattern detection
+      const hasCommonPattern = 
+        /123/.test(password) || 
+        /abc/.test(password) || 
+        /qwerty/.test(password) || 
+        /password/i.test(password) ||
+        /admin/i.test(password);
+      
+      const hasRepeats = /(.)\1\1/.test(password); // Three or more of the same char
+      const isKeyboardPattern = /qwe|asd|zxc|123|456|789/i.test(password);
+      
+      // Calculate complexity score (0-100)
+      let complexityScore = 0;
+      complexityScore += Math.min(length * 3.5, 40); // Up to 40 points for length
+      complexityScore += hasLower ? 10 : 0;
+      complexityScore += hasUpper ? 15 : 0;
+      complexityScore += hasDigit ? 10 : 0;
+      complexityScore += hasSpecial ? 15 : 0;
+      complexityScore += charDiversity > 0.7 ? 10 : 0;
+      complexityScore -= hasCommonPattern ? 20 : 0;
+      complexityScore -= hasRepeats ? 10 : 0;
+      complexityScore -= isKeyboardPattern ? 15 : 0;
+      
+      // Cap score between 0 and 100
+      complexityScore = Math.max(0, Math.min(100, complexityScore));
+      
+      // Calculate simulated crack time
+      let crackTimeText;
+      if (complexityScore < 20) {
+        crackTimeText = "Instantly";
+      } else if (complexityScore < 40) {
+        crackTimeText = "Minutes to Hours";
+      } else if (complexityScore < 60) {
+        crackTimeText = "Days to Weeks";
+      } else if (complexityScore < 80) {
+        crackTimeText = "Months to Years";
+      } else {
+        crackTimeText = "Centuries";
+      }
+      
+      // Update UI with the metrics
+      lengthValue.textContent = length;
+      complexityValue.textContent = Math.round(complexityScore);
+      entropyValue.textContent = entropy.toFixed(1);
+      crackTimeValue.textContent = crackTimeText;
+      
+      // Update strength meter
+      updateStrengthMeter(complexityScore);
+      
+      // Update neural network visualization
+      updateNeuralNetworkVisualization(password, complexityScore);
+      
+      // Update radar chart
+      updateFeatureChart(password, complexityScore, charDiversity, hasCommonPattern, hasRepeats);
+      
+      // Update AI feedback
+      updateAIFeedback(password, complexityScore);
+    }
+    
+    // Update the strength meter
+    function updateStrengthMeter(score) {
+      let strengthLevel;
+      let color;
+      
+      if (score < 20) {
+        strengthLevel = "Very Weak";
+        color = "#e74c3c"; // Red
+      } else if (score < 40) {
+        strengthLevel = "Weak";
+        color = "#e67e22"; // Orange
+      } else if (score < 60) {
+        strengthLevel = "Moderate";
+        color = "#f1c40f"; // Yellow
+      } else if (score < 80) {
+        strengthLevel = "Strong";
+        color = "#2ecc71"; // Green
+      } else {
+        strengthLevel = "Very Strong";
+        color = "#27ae60"; // Dark Green
+      }
+      
+      strengthFill.style.width = `${score}%`;
+      strengthFill.style.backgroundColor = color;
+      strengthText.textContent = strengthLevel;
+      strengthText.style.color = color;
+    }
+    
+    // Update the neural network visualization
+    function updateNeuralNetworkVisualization(password, score) {
+      // Reset all neurons and connections
+      document.querySelectorAll('.neuron').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('line').forEach(l => l.classList.remove('active'));
+      
+      // Activate neurons based on password properties
+      const hasLower = /[a-z]/.test(password);
+      const hasUpper = /[A-Z]/.test(password);
+      const hasDigit = /[0-9]/.test(password);
+      const hasSpecial = /[^A-Za-z0-9]/.test(password);
+      
+      // Input layer activations
+      if (hasLower) activateNeuron(0, 0);
+      if (hasUpper) activateNeuron(0, 1);
+      if (hasDigit) activateNeuron(0, 2);
+      if (hasSpecial) activateNeuron(0, 3);
+      
+      // Activate hidden layers based on complexity
+      // Hidden layer 1
+      const layer1Count = Math.floor(score / 20) + 1;
+      for (let i = 0; i < Math.min(layer1Count, 6); i++) {
+        activateNeuron(1, i);
+      }
+      
+      // Hidden layer 2
+      const layer2Count = Math.floor(score / 15) + 1;
+      for (let i = 0; i < Math.min(layer2Count, 8); i++) {
+        activateNeuron(2, i);
+      }
+      
+      // Hidden layer 3
+      const layer3Count = Math.floor(score / 30) + 1;
+      for (let i = 0; i < Math.min(layer3Count, 4); i++) {
+        activateNeuron(3, i);
+      }
+      
+      // Output layer - always activate but pulse based on strength
+      const outputNeuron = document.getElementById('neuron-4-0');
+      outputNeuron.classList.add('active');
+      outputNeuron.style.transform = `scale(${0.8 + (score / 100) * 0.7})`;
+      
+      // Activate connections between active neurons
+      document.querySelectorAll('.neuron.active').forEach(neuron => {
+        const [_, layerStr, indexStr] = neuron.id.split('-');
+        const layer = parseInt(layerStr);
+        const index = parseInt(indexStr);
+        
+        if (layer > 0) {
+          document.querySelectorAll(`#layer-${layer-1} .neuron.active`).forEach(prevNeuron => {
+            const [__, prevLayerStr, prevIndexStr] = prevNeuron.id.split('-');
+            const prevIndex = parseInt(prevIndexStr);
+            
+            const connection = document.getElementById(`connection-${layer-1}-${prevIndex}-${layer}-${index}`);
+            if (connection) {
+              connection.classList.add('active');
+            }
+          });
+        }
+      });
+    }
+    
+    function activateNeuron(layer, index) {
+      const neuron = document.getElementById(`neuron-${layer}-${index}`);
+      if (neuron) {
+        neuron.classList.add('active');
+      }
+    }
+    
+    // Update the feature chart
+    function updateFeatureChart(password, score, charDiversity, hasCommonPattern, hasRepeats) {
+      const length = password.length;
+      
+      // Calculate normalized values for each feature (0-1)
+      const lengthScore = Math.min(length / 20, 1); // Max score at 20 chars
+      const diversityScore = charDiversity;
+      const patternScore = hasCommonPattern ? 0.2 : (hasRepeats ? 0.6 : 0.9);
+      
+      // Simulate uniqueness score based on length and diversity
+      const uniquenessScore = (lengthScore * 0.6) + (diversityScore * 0.4);
+      
+      // Simulate dictionary resistance
+      const isDictionaryWord = /^[a-z]{3,8}$/i.test(password) || 
+                              password.toLowerCase() === 'password' || 
+                              password.toLowerCase() === 'admin';
+      const dictionaryScore = isDictionaryWord ? 0.1 : 0.8;
+      
+      // Update chart data
+      featureChart.data.datasets[0].data = [
+        lengthScore,
+        diversityScore,
+        patternScore,
+        uniquenessScore,
+        dictionaryScore
+      ];
+      
+      featureChart.update();
+    }
+    
+    // Update AI feedback
+    function updateAIFeedback(password, score) {
+      const length = password.length;
+      const hasLower = /[a-z]/.test(password);
+      const hasUpper = /[A-Z]/.test(password);
+      const hasDigit = /[0-9]/.test(password);
+      const hasSpecial = /[^A-Za-z0-9]/.test(password);
+      const hasCommonPattern = /123/.test(password) || /abc/.test(password) || /password/i.test(password);
+      const hasRepeats = /(.)\1\1/.test(password);
+      
+      let feedback = '';
+      
+      if (score < 40) {
+        feedback = "This password has significant weaknesses that make it vulnerable to attacks. Consider the suggestions below to improve it.";
+      } else if (score < 70) {
+        feedback = "This password provides moderate protection but could be strengthened further with a few improvements.";
+      } else {
+        feedback = "This password demonstrates excellent security characteristics, providing strong protection against most attack methods.";
+      }
+      
+      feedbackText.textContent = feedback;
+      
+      // Clear previous features
+      featureList.innerHTML = '';
+      
+      // Add positive features
+      if (length >= 12) addFeature("Good length (12+ characters)", true);
+      if (hasLower && hasUpper && hasDigit && hasSpecial) addFeature("Excellent character diversity", true);
+      else if ((hasLower && hasUpper && hasDigit) || (hasLower && hasSpecial) || (hasUpper && hasSpecial)) addFeature("Good character diversity", true);
+      if (!hasCommonPattern && !hasRepeats) addFeature("No common patterns detected", true);
+      if (length > 14) addFeature("High resistance to brute force attacks", true);
+      
+      // Add negative features
+      if (length < 8) addFeature("Too short (less than 8 characters)", false);
+      if (!hasUpper) addFeature("Missing uppercase letters", false);
+      if (!hasLower) addFeature("Missing lowercase letters", false);
+      if (!hasDigit) addFeature("Missing numbers", false);
+      if (!hasSpecial) addFeature("Missing special characters", false);
+      if (hasCommonPattern) addFeature("Contains common patterns", false);
+      if (hasRepeats) addFeature("Contains repeated characters", false);
+      if (/^[0-9]+$/.test(password)) addFeature("Numbers only password", false);
+    }
+    
+    function addFeature(text, isPositive) {
+      const item = document.createElement('div');
+      item.className = 'feature-item';
+      
+      const icon = document.createElement('div');
+      icon.className = isPositive ? 'feature-icon' : 'feature-icon negative';
+      icon.textContent = isPositive ? '✓' : '✗';
+      
+      const content = document.createElement('div');
+      content.textContent = text;
+      
+      item.appendChild(icon);
+      item.appendChild(content);
+      featureList.appendChild(item);
+    }
+    
+    // Reset visualizations
+    function resetVisualizations() {
+      strengthFill.style.width = '0%';
+      strengthText.textContent = 'Enter a password';
+      strengthText.style.color = '';
+      
+      lengthValue.textContent = '0';
+      complexityValue.textContent = '0';
+      entropyValue.textContent = '0';
+      crackTimeValue.textContent = '-';
+      
+      feedbackText.textContent = 'Enter a password to receive AI-powered feedback.';
+      featureList.innerHTML = '';
+      
+      document.querySelectorAll('.neuron').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('line').forEach(l => l.classList.remove('active'));
+      
+      featureChart.data.datasets[0].data = [0, 0, 0, 0, 0];
+      featureChart.update();
+    }
+    
+    // Initialize everything when the page loads
+    window.addEventListener('load', initVisualization);
+    window.addEventListener('resize', positionConnections);
+  </script>
+</body>
+</html>

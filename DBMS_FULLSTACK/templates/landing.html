@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestIQ | Advanced Stock Analysis Platform</title>
+    <link rel="stylesheet" href="/static/landing.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Theme Toggle Button will be added by JavaScript -->
+    
+    <div class="market-ticker-container">
+        <div class="ticker-tape" id="ticker-tape"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <i class="fas fa-chart-line"></i>
+                <h1>InvestIQ</h1>
+            </div>
+            <p class="tagline">Advanced analytics for the modern investor</p>
+            <div class="market-summary">
+                <div class="index" id="dow">
+                    <span class="index-name">DOW</span>
+                    <span class="index-value">38,245.31</span>
+                    <span class="index-change up"><i class="fas fa-caret-up"></i> 0.42%</span>
+                </div>
+                <div class="index" id="sp500">
+                    <span class="index-name">S&P 500</span>
+                    <span class="index-value">5,187.52</span>
+                    <span class="index-change down"><i class="fas fa-caret-down"></i> 0.15%</span>
+                </div>
+                <div class="index" id="nasdaq">
+                    <span class="index-name">NASDAQ</span>
+                    <span class="index-value">16,302.25</span>
+                    <span class="index-change up"><i class="fas fa-caret-up"></i> 0.68%</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="boxes-container">
+            <div class="box" id="stock-analysis">
+                <div class="chart-overlay"></div>
+                <div class="box-content">
+                    <div class="box-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h2>Technical Analysis</h2>
+                    <p>Advanced charting patterns, indicators, and real-time market data to inform your trading decisions</p>
+                    <div class="box-features">
+                        <span><i class="fas fa-check-circle"></i> Candlestick Patterns</span>
+                        <span><i class="fas fa-check-circle"></i> Volume Analysis</span>
+                        <span><i class="fas fa-check-circle"></i> Support/Resistance</span>
+                    </div>
+                    <a href="http://127.0.0.1:5000" class="btn">
+                        Analyze Markets <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="box" id="sentiment-analysis">
+                <div class="chart-overlay"></div>
+                <div class="box-content">
+                    <div class="box-icon">
+                        <i class="fas fa-comments-dollar"></i>
+                    </div>
+                    <h2>Sentiment Tracker</h2>
+                    <p>Monitor social sentiment and news impact on your watchlist with AI-powered analysis</p>
+                    <div class="box-features">
+                        <span><i class="fas fa-check-circle"></i> News Sentiment</span>
+                        <span><i class="fas fa-check-circle"></i> Social Media Trends</span>
+                        <span><i class="fas fa-check-circle"></i> Institutional Movement</span>
+                    </div>
+                    <a href="http://127.0.0.1:5002" class="btn">
+                        Track Sentiment <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="box" id="test-skills">
+                <div class="chart-overlay"></div>
+                <div class="box-content">
+                    <div class="box-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h2>Strategy Backtester</h2>
+                    <p>Backtest your trading strategies against historical data to optimize performance</p>
+                    <div class="box-features">
+                        <span><i class="fas fa-check-circle"></i> Paper Trading</span>
+                        <span><i class="fas fa-check-circle"></i> Risk Analysis</span>
+                        <span><i class="fas fa-check-circle"></i> Performance Metrics</span>
+                    </div>
+                    <a href="http://127.0.0.1:5003" class="btn">
+                        Test Strategies <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>MarketPulse</h3>
+                    <p>Advanced analytics for informed trading decisions</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Market News</a></li>
+                        <li><a href="#">Learning Center</a></li>
+                        <li><a href="#">API Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Connect</h3>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-discord"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 MarketPulse | Real-time data delayed by 15 minutes</p>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="/static/landing.js"></script>
+</body>
+</html>

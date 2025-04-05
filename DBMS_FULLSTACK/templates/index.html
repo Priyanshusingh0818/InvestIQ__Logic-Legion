@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Prediction and Financial Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        dark: {
+                            DEFAULT: '#1a1a1a',
+                            card: '#242424'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-dark text-gray-100 min-h-screen font-sans">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-primary mb-4 bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                Stock Prediction & Analytics
+            </h1>
+        </div>
+
+        <!-- Search Input -->
+        <div class="flex justify-center mb-12">
+            <div class="relative w-full max-w-md">
+                <input type="text" 
+                       id="symbol" 
+                       class="w-full px-6 py-4 bg-dark-card border border-gray-700 rounded-lg text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                       placeholder="Enter stock symbol (e.g., AAPL)">
+                <button onclick="analyzeStock()" 
+                        class="absolute right-2 top-2 px-6 py-2 bg-gradient-to-r from-primary to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-medium">
+                    Analyze
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden">
+            <div class="flex items-center justify-center space-x-2 mb-8">
+                <div class="w-4 h-4 bg-primary rounded-full animate-bounce"></div>
+                <div class="w-4 h-4 bg-primary rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-4 h-4 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"></div>
+
+        <!-- Charts Section -->
+        <div class="space-y-8">
+            <!-- Prediction Chart -->
+            <div class="bg-dark-card rounded-xl p-6 shadow-lg">
+                <canvas id="predictionChart" class="w-full"></canvas>
+            </div>
+            
+            <!-- Volume and RSI Charts -->
+            <div class="grid grid-cols-1 gap-6">
+                <div class="bg-dark-card rounded-xl p-6 shadow-lg border-10">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+                <div class="bg-dark-card rounded-xl p-6 shadow-lg">
+                    <canvas id="rsiChart"></canvas>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Prediction Table -->
+        <div class="mt-12 bg-dark-card rounded-xl overflow-hidden shadow-lg">
+            <table id="prediction-table" class="w-full">
+                <thead>
+                    <tr class="bg-gray-800">
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Day</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Predicted Price</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">RSI</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Bollinger Bands</th>
+                    </tr>
+                </thead>
+                <tbody id="prediction-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let predictionChart, volumeChart, rsiChart;
+
+        async function analyzeStock() {
+            const symbol = document.getElementById('symbol').value.toUpperCase();
+            const loadingElement = document.getElementById('loading');
+            loadingElement.style.display = 'flex';
+
+            try {
+                const response = await fetch('http://localhost:5000/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ symbol }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to analyze stock');
+                }
+
+                const data = await response.json();
+                updateDashboard(data, symbol);
+                createPredictionChart(data.future_prices);
+                createVolumeChart(data.historical_volume);
+                createRSIChart(data.historical_rsi);
+                populatePredictionTable(data);
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        function updateDashboard(data, symbol) {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = `
+                <div class="bg-dark-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-primary">${symbol} Overview</h2>
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">Current Price</span>
+                            <span class="font-semibold">$${data.predicted_price}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-dark-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-primary">Stock Metrics</h2>
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">P/E Ratio</span>
+                            <span class="font-semibold">${data.additional_data.pe_ratio.toFixed(2)}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">Market Cap</span>
+                            <span class="font-semibold">$${(data.additional_data.market_cap / 1e9).toFixed(2)}B</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">Dividend Yield</span>
+                            <span class="font-semibold">${(data.additional_data.dividend_yield * 100).toFixed(2)}%</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-dark-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-primary">Economic Indicators</h2>
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">Interest Rate</span>
+                            <span class="font-semibold">${(data.economic_data.interest_rate * 100).toFixed(2)}%</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">Inflation Rate</span>
+                            <span class="font-semibold">${(data.economic_data.inflation_rate * 100).toFixed(2)}%</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">GDP Growth</span>
+                            <span class="font-semibold">${(data.economic_data.gdp_growth_rate * 100).toFixed(2)}%</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-dark-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-primary">Model Performance</h2>
+                    <div class="space-y-3">
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">MAE</span>
+                            <span class="font-semibold">${data.model_mae.toFixed(4)}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span class="text-gray-400">Top Feature</span>
+                            <span class="font-semibold">${Object.entries(data.feature_importance).sort((a, b) => b[1] - a[1])[0][0]}</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createPredictionChart(futurePrices) {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            
+            if (predictionChart) {
+                predictionChart.destroy();
+            }
+
+            predictionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: '7-Day Price Prediction',
+                        data: futurePrices,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '7-Day Stock Price Prediction',
+                            color: 'white'
+                        },
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Price ($)',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createVolumeChart(historicalVolume) {
+            const ctx = document.getElementById('volumeChart').getContext('2d');
+            
+            if (volumeChart) {
+                volumeChart.destroy();
+            }
+
+            volumeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['5 Weeks Ago', '4 Weeks Ago', '3 Weeks Ago', '2 Weeks Ago', 'Last Week'],
+                    datasets: [{
+                        label: 'Trading Volume',
+                        data: historicalVolume,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgb(75, 192, 192)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Historical Trading Volume',
+                            color: 'white'
+                        },
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Volume',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createRSIChart(historicalRSI) {
+            const ctx = document.getElementById('rsiChart').getContext('2d');
+            
+            if (rsiChart) {
+                rsiChart.destroy();
+            }
+
+            rsiChart = new Chart(ctx, {
+                type: 'line',
+                data: {labels: ['5 Weeks Ago', '4 Weeks Ago', '3 Weeks Ago', '2 Weeks Ago', 'Last Week'],
+                    datasets: [{
+                        label: 'RSI',
+                        data: historicalRSI,
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Relative Strength Index (RSI)',
+                            color: 'white'
+                        },
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'RSI',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function populatePredictionTable(data) {
+            const tableBody = document.getElementById('prediction-table-body');
+            tableBody.innerHTML = '';
+
+            data.future_prices.forEach((price, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-t border-gray-800 hover:bg-gray-800/50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm">Day ${index + 1}</td>
+                    <td class="px-6 py-4 text-sm font-medium">$${price.toFixed(2)}</td>
+                    <td class="px-6 py-4 text-sm">${(Math.random() * 30 + 35).toFixed(2)}</td>
+                    <td class="px-6 py-4 text-sm">${(price * 0.95).toFixed(2)} - ${(price * 1.05).toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Initialize charts with dummy data on page load
+        window.onload = function() {
+            const dummyPrices = [100, 102, 101, 103, 102, 104, 105];
+            const dummyVolume = [1000000, 1200000, 900000, 1100000, 1300000];
+            const dummyRSI = [45, 52, 58, 62, 55];
+
+            createPredictionChart(dummyPrices);
+            createVolumeChart(dummyVolume);
+            createRSIChart(dummyRSI);
+        }
+    </script>
+</body>
+</html>
