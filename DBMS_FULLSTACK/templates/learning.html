@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockSense - Essential Stock Market Terms</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --secondary: #0ea5e9;
+            --accent: #06b6d4;
+            --background: #f8fafc;
+            --text: #0f172a;
+            --card-bg: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+        
+        nav {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        nav li {
+            margin: 0.5rem 1rem;
+        }
+        
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        nav a:hover {
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        nav a.active {
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent);
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .term-section {
+            margin-bottom: 4rem;
+            padding-top: 1rem;
+        }
+        
+        .term-section h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-size: 1.75rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .term-section h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 60px;
+            background-color: var(--accent);
+        }
+        
+        .term-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .term-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .term-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .term-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .term-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .term-title {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .term-description {
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        .term-importance {
+            font-style: italic;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        
+        .section-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .section-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 4rem;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: var(--accent);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .term-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>StockSense</h1>
+        <p>Master the essential terminology before investing in the stock market</p>
+    </header>
+    
+    <nav id="main-nav">
+        <ul>
+            <li><a href="#trading" class="nav-link" data-section="trading">Trading Basics</a></li>
+            <li><a href="#valuation" class="nav-link" data-section="valuation">Valuation Metrics</a></li>
+            <li><a href="#technical" class="nav-link" data-section="technical">Technical Indicators</a></li>
+            <li><a href="#market" class="nav-link" data-section="market">Market Fundamentals</a></li>
+        </ul>
+    </nav>
+    
+    <main>
+        <section class="intro">
+            <h2>Essential Stock Market Terms</h2>
+            <p>Understanding these key concepts will help you make more informed investment decisions. Familiarize yourself with these terms before diving into stock predictions and investments.</p>
+        </section>
+        
+        <section id="trading" class="term-section">
+            <div class="section-container">
+                <h3>Trading Basics</h3>
+                <div class="term-grid">
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">OP</div>
+                            <h4 class="term-title">Open Price</h4>
+                        </div>
+                        <p class="term-description">The open price is the price at which a security first trades when the market opens for the day. It's the starting point for daily price action analysis.</p>
+                        <p class="term-importance">Significant gaps between previous close and opening prices can indicate strong market sentiment based on overnight news or events.</p>
+                    </div>
+                    
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">CP</div>
+                            <h4 class="term-title">Close Price</h4>
+                        </div>
+                        <p class="term-description">The close price is the final price at which a security trades during a regular trading session. It's used as the reference point for daily performance calculations.</p>
+                        <p class="term-importance">Many technical indicators and chart patterns use closing prices as they're considered more representative of market sentiment than intraday prices.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="valuation" class="term-section">
+            <div class="section-container">
+                <h3>Valuation Metrics</h3>
+                <div class="term-grid">
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">P/E</div>
+                            <h4 class="term-title">P/E Ratio (Price-to-Earnings)</h4>
+                        </div>
+                        <p class="term-description">The P/E ratio measures a company's current share price relative to its per-share earnings. It indicates how much investors are willing to pay for each dollar of earnings.</p>
+                        <p class="term-importance">A high P/E could mean the stock is overvalued or investors expect high growth rates in the future. A low P/E might indicate undervaluation or concerns about the company's future.</p>
+                    </div>
+                    
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">DY</div>
+                            <h4 class="term-title">Dividend Yield</h4>
+                        </div>
+                        <p class="term-description">Dividend yield represents the annual dividend payment as a percentage of the stock's current price. It shows the return on investment from dividends alone.</p>
+                        <p class="term-importance">Higher dividend yields can indicate value stocks or established companies, while lower yields might represent growth-focused businesses that reinvest earnings.</p>
+                    </div>
+                    
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">MC</div>
+                            <h4 class="term-title">Market Capitalization</h4>
+                        </div>
+                        <p class="term-description">Market cap is the total value of all a company's shares of stock, calculated by multiplying the share price by the number of outstanding shares.</p>
+                        <p class="term-importance">Market cap categorizes companies as large-cap, mid-cap, or small-cap, each with different risk profiles and growth potentials.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="technical" class="term-section">
+            <div class="section-container">
+                <h3>Technical Indicators</h3>
+                <div class="term-grid">
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">BB</div>
+                            <h4 class="term-title">Bollinger Bands</h4>
+                        </div>
+                        <p class="term-description">Bollinger Bands consist of a middle band (usually a 20-day simple moving average) with an upper and lower band that represent price volatility. The bands widen during volatile markets and narrow during less volatile periods.</p>
+                        <p class="term-importance">Used to identify overbought or oversold conditions and potential price reversals when the price touches or crosses the bands.</p>
+                    </div>
+                    
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">RSI</div>
+                            <h4 class="term-title">RSI (Relative Strength Index)</h4>
+                        </div>
+                        <p class="term-description">RSI is a momentum oscillator that measures the speed and change of price movements on a scale from 0 to 100. It identifies overbought (above 70) or oversold (below 30) conditions.</p>
+                        <p class="term-importance">RSI helps traders identify potential reversal points and divergences between price and momentum.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="market" class="term-section">
+            <div class="section-container">
+                <h3>Market Fundamentals</h3>
+                <div class="term-grid">
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">IR</div>
+                            <h4 class="term-title">Inflation Rate</h4>
+                        </div>
+                        <p class="term-description">Inflation rate measures the percentage increase in the general price level of goods and services over a period of time. It erodes purchasing power and affects interest rates.</p>
+                        <p class="term-importance">High inflation can lead to higher interest rates and may negatively impact stock valuations, especially for growth stocks.</p>
+                    </div>
+                    
+                    <div class="term-card">
+                        <div class="term-header">
+                            <div class="term-icon">GDP</div>
+                            <h4 class="term-title">GDP Growth Rate</h4>
+                        </div>
+                        <p class="term-description">GDP (Gross Domestic Product) growth rate measures how fast an economy is growing. It's the percentage change in a country's total economic output compared to the previous period.</p>
+                        <p class="term-importance">Strong GDP growth often correlates with healthy corporate profits and potentially positive stock market performance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="cta">
+            <h3>Ready to Start Your Investment Journey?</h3>
+            <p>Now that you understand these essential terms, you're better equipped to analyze stocks and make informed investment decisions.</p>
+            <a href="landing.html" class="cta-button">Try Our Stock Prediction Tool</a>
+        </section>
+    </main>
+    
+    <a href="#" class="back-to-top" id="back-to-top">↑</a>
+    
+    <footer>
+        <p>StockSense - Your Partner in Smart Investing</p>
+        <p>© 2025 StockSense. All stock market investments involve risk. Please research thoroughly before investing.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all sections and nav links
+            const sections = document.querySelectorAll('.term-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const backToTop = document.getElementById('back-to-top');
+            
+            // Show back to top button when scrolling down
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+                
+                // Check which section is in view for active nav highlighting
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 100;
+                    const sectionHeight = section.clientHeight;
+                    if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-section') === current) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // Check which sections are visible for animation
+                sections.forEach(section => {
+                    const sectionContainer = section.querySelector('.section-container');
+                    const sectionTop = section.offsetTop;
+                    const sectionBottom = sectionTop + section.clientHeight;
+                    const windowBottom = window.scrollY + window.innerHeight;
+                    
+                    if (windowBottom > sectionTop && window.scrollY < sectionBottom) {
+                        sectionContainer.classList.add('visible');
+                    }
+                });
+            });
+            
+            // Back to top functionality
+            backToTop.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Add click event listeners to nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('data-section');
+                    const section = document.getElementById(sectionId);
+                    
+                    // Scroll to section
+                    window.scrollTo({
+                        top: section.offsetTop - 70,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Update active link
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Initialize - show first section (Trading Basics) by default
+            document.querySelector('#trading .section-container').classList.add('visible');
+            document.querySelector('a[data-section="trading"]').classList.add('active');
+        });
+    </script>
+</body>
+</html>
